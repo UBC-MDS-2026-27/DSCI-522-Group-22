@@ -1,0 +1,83 @@
+---
+title: "Predicting Spotify Song Genres from Song Features"
+author: "Meredith Fraser, Vaibhav Korrapati, Gabriella Angelica Jemima Hasian and Siwei Wang"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    embed-resources: true
+jupyter: python3
+execute:
+  echo: true
+  warning: false
+---
+
+```{python}
+import pandas as pd
+```
+
+## Summary
+
+<!-- Quick paragraph about the question being asked and a summary of the result and analysis. Do this at the end (#17) -->
+
+## Introduction
+
+<!--
+(#11)
+- Background on the topic for someone unfamiliar with it.
+- Why this problem is important or interesting (more than one sentence).
+- The question we are trying to answer.
+- The data set: where it comes from, what each row is, which variables we use. Cite it.
+- Define the target variable (playlist genre).
+-->
+
+## Methods
+
+<!--
+(#12) In written English, walk the reader through what we did and why.
+- Name the model and explain why it fits the question.
+- Name the evaluation metric and explain why we chose it.
+-->
+
+### Data download and cleaning
+
+<!-- (#6) Code that downloads the data to data/raw/, cleans it and saves it to data/processed/. -->
+
+### Train/test split
+
+<!-- (#6) Split into training and test sets before any EDA or preprocessing. -->
+
+### Exploratory data analysis
+
+<!-- (#13) Summary of the training data relevant to the question. -->
+
+<!-- (#14) Visualization of the training data relevant to the question. -->
+
+### Classification analysis
+
+<!-- (#15) Fit and evaluate the model. -->
+
+## Results
+
+<!--
+(#16) Key results that answer the question, using figures and tables.
+- Number and caption every figure and table, and refer to them in the text.
+- Label axes in plain English with units; include legends.
+-->
+
+## Discussion
+
+<!--
+(#17)
+- Summarize what we found and link it back to the question.
+- What the findings mean in the real world.
+- Is this what we expected?
+- Assumptions and limitations.
+- Impact of the findings.
+- Future questions.
+-->
+
+## References
+
+<!-- (#17) At least 4 references, including the data set. Every reference must be cited in the text. Use one consistent format. -->
