@@ -57,10 +57,10 @@ Repeated or serious concerns that cannot be resolved within the group will be es
 ## 8. Contact and Reporting
 
 If you have questions, concerns, or wish to report a conduct-related issue regarding our team, you may contact any team member directly via email:
-- **Vaibhav Korrapati:** 
-- **Siwei Wang:** 
+- **Vaibhav Korrapati:** vaikor26@student.ubc.ca
+- **Siwei Wang:** siwei202@student.ubc.ca
 - **Gabriella Hasian:** gab3601@student.ubc.ca
-- **Meredith Fraser:** 
+- **Meredith Fraser:** mefraser@student.ubc.ca
 
 All concerns will be treated respectfully and handled with discretion. We will make reasonable efforts to protect the privacy of those involved, address concerns fairly, and prevent retaliation against anyone who raises a concern in good faith.
 
