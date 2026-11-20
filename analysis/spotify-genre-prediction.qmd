@@ -190,7 +190,72 @@ Table 2 summarizes the continuous audio features in the training set. Songs have
 
 
 
-<!-- (#14) Visualization of the training data relevant to the question. -->
+
+
+#### **Visualization of Training Data**
+
+We created two visualizations using only the training data to explore the genre distribution and differences in audio features.
+
+```{python}
+#| label: fig-genre-distribution
+#| fig-cap: "Number of songs in each playlist genre in the training set."
+
+import altair as alt
+
+genre_chart = (
+    alt.Chart(genre_summary)
+    .mark_bar()
+    .encode(
+        x=alt.X("Playlist genre:N", sort="-y", title="Playlist genre"),
+        y=alt.Y("Number of songs:Q", title="Number of songs"),
+        tooltip=["Playlist genre:N", "Number of songs:Q"]
+    )
+    .properties(
+        width=600,
+        height=350,
+        title="Distribution of Playlist Genres"
+    )
+)
+
+display(genre_chart)
+```
+
+@fig-genre-distribution shows the distribution of playlist genres in the training set. Rap has the most songs (4,321), while Latin has the fewest (3,310). Overall, the six genres are relatively balanced, with no single genre dominating the training set.
+
+```{python}
+#| label: fig-energy-by-genre
+#| fig-cap: "Distribution of song energy across playlist genres in the training set."
+
+alt.data_transformers.disable_max_rows()
+
+energy_chart = (
+    alt.Chart(train_df[[TARGET, "energy"]])
+    .mark_boxplot()
+    .encode(
+        x=alt.X(
+            "playlist_genre:N",
+            title="Playlist genre",
+            sort=genre_summary["Playlist genre"].tolist()
+        ),
+        y=alt.Y(
+            "energy:Q",
+            title="Energy (0–1)",
+            scale=alt.Scale(domain=[0, 1])
+        )
+    )
+    .properties(
+        width=600,
+        height=350,
+        title="Energy Distribution by Playlist Genre"
+    )
+)
+
+display(energy_chart)
+```
+
+@fig-energy-by-genre compares the energy distributions across the six playlist genres. EDM has the highest median energy, while R&B has the lowest. However, the distributions overlap across genres, suggesting that energy alone may not be enough to classify songs accurately. Combining multiple audio features may help improve KNN classification.
+
+
 
 ### Classification analysis
 
