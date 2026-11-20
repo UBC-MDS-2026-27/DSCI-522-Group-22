@@ -14,7 +14,11 @@ execute:
 ---
 
 ```{python}
+from pathlib import Path
+
 import pandas as pd
+import requests
+from sklearn.model_selection import train_test_split
 ```
 
 ## Summary
@@ -42,11 +46,76 @@ import pandas as pd
 
 ### Data download and cleaning
 
-<!-- (#6) Code that downloads the data to data/raw/, cleans it and saves it to data/processed/. -->
+We downloaded the Spotify Songs dataset from TidyTuesday. Because each row represents a single playlist entry, songs that appear on multiple playlists are listed more than once.
+
+```{python}
+DATA_URL = (
+    "https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/"
+    "data/2020/2020-01-21/spotify_songs.csv"
+)
+RAW_DIR = Path("../data/raw")
+PROCESSED_DIR = Path("../data/processed")
+RAW_DIR.mkdir(parents=True, exist_ok=True)
+PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+
+raw_path = RAW_DIR / "spotify_songs.csv"
+response = requests.get(DATA_URL, timeout=60)
+response.raise_for_status()
+raw_path.write_bytes(response.content)
+
+spotify_raw = pd.read_csv(raw_path)
+spotify_raw.shape
+```
+
+To prepare and clean the dataset, we kept only the columns needed for modelling: each song’s ID, title, artist, playlist genre (our target), and Spotify’s twelve numeric audio features (such as energy and tempo). Duplicate entries could put the same song in both the training and test sets and make a test score look better than it is. To prevent data leakage of this sort, we retain only the first occurrence of each song.
+
+
+```{python}
+FEATURES = [
+    "danceability",
+    "energy",
+    "key",
+    "loudness",
+    "mode",
+    "speechiness",
+    "acousticness",
+    "instrumentalness",
+    "liveness",
+    "valence",
+    "tempo",
+    "duration_ms",
+]
+TARGET = "playlist_genre"
+
+spotify_clean = (
+    spotify_raw[["track_id", "track_name", "track_artist", TARGET] + FEATURES]
+    .drop_duplicates(subset="track_id", keep="first")
+    .dropna(subset=[TARGET] + FEATURES)
+    .reset_index(drop=True)
+)
+spotify_clean.to_csv(PROCESSED_DIR / "spotify_songs_clean.csv", index=False)
+
+print(f"Rows before cleaning: {len(spotify_raw):,}")
+print(f"Rows after cleaning: {len(spotify_clean):,}")
+```
 
 ### Train/test split
 
-<!-- (#6) Split into training and test sets before any EDA or preprocessing. -->
+Before exploring the data or making any modelling decisions, we set aside 20% of the songs as a test set and kept the remaining 80% for training. We split the data so that each genre makes up the same share of both sets, and locked in the random split with a fixed seed (522) to make the process reproducible with the same test split. The test set will be untouched until we evaluate our final model.
+
+```{python}
+train_df, test_df = train_test_split(
+    spotify_clean,
+    test_size=0.2,
+    stratify=spotify_clean[TARGET],
+    random_state=522,
+)
+train_df.to_csv(PROCESSED_DIR / "spotify_train.csv", index=False)
+test_df.to_csv(PROCESSED_DIR / "spotify_test.csv", index=False)
+
+print(f"Training set: {len(train_df):,} songs")
+print(f"Test set: {len(test_df):,} songs")
+```
 
 ### Exploratory data analysis
 
