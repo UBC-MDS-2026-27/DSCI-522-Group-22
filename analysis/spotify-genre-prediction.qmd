@@ -119,7 +119,76 @@ print(f"Test set: {len(test_df):,} songs")
 
 ### Exploratory data analysis
 
-<!-- (#13) Summary of the training data relevant to the question. -->
+
+#### Summary of Training Data
+
+We explored the training set to understand the distribution of playlist genres and the audio features used for classification. Only training data was used to avoid influencing the analysis with information from the test set.
+
+```{python}
+from IPython.display import display
+
+print(f"Training set: {train_df.shape[0]:,} songs")
+print(f"Number of playlist genres: {train_df[TARGET].nunique()}")
+print(f"Missing values: {train_df[FEATURES + [TARGET]].isna().sum().sum()}")
+```
+
+**Table 1. Distribution of playlist genres in the training set.**
+
+```{python}
+genre_summary = (
+    train_df[TARGET]
+    .value_counts()
+    .rename_axis("Playlist genre")
+    .reset_index(name="Number of songs")
+)
+
+genre_summary["Percentage (%)"] = (
+    genre_summary["Number of songs"] / len(train_df) * 100
+).round(1)
+
+display(genre_summary)
+```
+
+
+Table 1 shows the distribution of songs across six playlist genres in the training set. Rap has the most songs (19.0%), while Latin has the fewest (14.6%). Overall, the genre distribution is relatively balanced, with no single genre dominating the dataset.
+
+
+**Table 2. Descriptive statistics of continuous audio features in the training set.**
+
+```{python}
+continuous_features = [
+    feature for feature in FEATURES
+    if feature not in ["key", "mode"]
+]
+
+audio_data = train_df[continuous_features].copy()
+audio_data["duration_ms"] = audio_data["duration_ms"] / 1000
+audio_data = audio_data.rename(
+    columns={"duration_ms": "duration (seconds)"}
+)
+
+feature_summary = (
+    audio_data
+    .agg(["mean", "std", "min", "max"])
+    .T
+    .rename(columns={
+        "mean": "Mean",
+        "std": "SD",
+        "min": "Min",
+        "max": "Max"
+    })
+    .rename_axis("Audio feature")
+    .reset_index()
+    .round(3)
+)
+
+display(feature_summary)
+```
+
+
+Table 2 summarizes the continuous audio features in the training set. Songs have an average danceability of 0.653, energy of 0.698, and tempo of approximately 121 BPM. The features have different measurement scales, especially tempo and duration compared to features ranging from 0 to 1. Therefore, feature scaling is important before applying KNN classification. Key and mode were excluded from this summary because they are discrete variables.
+
+
 
 <!-- (#14) Visualization of the training data relevant to the question. -->
 
