@@ -27,14 +27,24 @@ from sklearn.model_selection import train_test_split
 
 ## Introduction
 
-<!--
-(#11)
-- Background on the topic for someone unfamiliar with it.
-- Why this problem is important or interesting (more than one sentence).
-- The question we are trying to answer.
-- The data set: where it comes from, what each row is, which variables we use. Cite it.
-- Define the target variable (playlist genre).
--->
+Digital music collections have expanded rapidly in recent decades, and the recent market shift away from purchase of individual albums towards subscriptions to streaming platforms has significantly changed the way we listen to music (Wlomert et al., 2025). Streaming platforms like Spotify and Apple Music hold tens of millions of songs that can quickly become overwhelming for listeners exploring new music (Spotify ‘For the Record’, 2026; Apple Newsroom Release, 2022; Wlomert et al., 2025). Consequently, classification of defining song characteristics such as genre is increasingly useful for suggesting related songs, and building customized, genre-specific playlists. 
+
+Music information retrieval (MIR) is an active area of research, and music genre classification has been identified as a challenging task given the diversity of audio features and the subjective, dynamic definitions of unique genres (Ramirez and Flores, 2020). Previous work on music genre classification has employed several machine learning algorithms, including Support Vector Machines (SVMs), k-Nearest-Neighbour (k-NN) classification algorithms, and has more recently involved advanced deep learning techniques (Narkhede et al., 2022; Ramirez and Flores, 2020). Here, we investigate the effectiveness of a k-NN model and ask whether a k-NN model can predict a candidate genre for songs based on various song features. We selected a k-NN model based on its simplicity and interpretability for predicting the genre of future related songs.
+
+In our study, we use Spotify song data (R for Data Science Online Learning Community, 2020) collected from the Spotify Web API using the spotifyr package (Thompson et al., 2024). This data set contains total 28,356 unique songs, each with twelve numeric audio descriptive features. These features include: 
+    (1) danceability (scale of 0-1, based on a combination of musical elements); 
+    (2) energy (scale of 0-1, based on measure of intensity and activity); 
+    (3) key (ordinal integer based on standard pitch Class notation that measures the estimated overall key of the track); 
+    (4) loudness (measures the overall loudness of the track in decibels, dB); 
+    (5) mode (indicates the modality if song is in major (1) or minor (0)); 
+    (6) speechiness (a measure of the presence of spoken words in a song, ranging from 0-1); 
+    (7) acousticness (a confidence level of whether the track is acoustic, ranging from 0-1); 
+    (8) instrumentalness (measure of whether a track contains no vocals, ranging from 0-1); 
+    (9) liveness (measure of the presence of a live audience in the song recording, ranging from 0-1); 
+    (10) valence (measure describing the musical positiveness conveyed by the song, ranging from 0-1); 
+    (11) tempo (estimated tempo of the song in beats per minute, bpm); and 
+    (12) duration (duration of the song in milliseconds, ms). 
+The target we aim to predict is a candidate playlist genre for the song, one of EDM, latin, pop, R&B, rap and rock, determined from existing user-created and Spotify playlists that contain these songs.
 
 ## Methods
 
@@ -218,4 +228,16 @@ Table 2 summarizes the continuous audio features in the training set. Songs have
 
 ## References
 
-<!-- (#17) At least 4 references, including the data set. Every reference must be cited in the text. Use one consistent format. -->
+Apple Newsroom Release. (October 3, 2022). “Celebrating 100 million songs”. Accessed on 20-Nov-2026: https://www.apple.com/ca/newsroom/2022/10/celebrating-100-million-songs/
+
+Narkhede, N., Mathur, S., Bhaskar, A. (2022). Machine Learning Techniques for Music Genre Classification. In: Joshi, A., Mahmud, M., Ragel, R.G., Thakur, N.V. (eds) Information and Communication Technology for Competitive Strategies (ICTCS 2020). Lecture Notes in Networks and Systems, vol 191. Springer, Singapore. https://doi.org/10.1007/978-981-16-0739-4_15
+
+R for Data Science Online Learning Community. (2020). Spotify songs [Data set]. TidyTuesday. https://github.com/rfordatascience/tidytuesday/tree/main/data/2020/2020-01-21
+
+Ramirez, J., & Flores, M. J. (2020). Machine learning for music genre: multifaceted review and experimentation with audioset. Journal of Intelligent Information Systems, 55(3), 469-499. https://doi.org/10.1007/s10844-019-00582-9
+
+Thompson C, Antal D, Parry J, Phipps D, Wolff T (2024). spotifyr: R Wrapper for the 'Spotify' Web API. doi: 10.32614/CRAN.package.spotifyr. R package version 2.2.5, https://CRAN.R-project.org/package=spotifyr.
+
+Spotify For the Record. (Accessed 20-Nov-2026). “About Spotify”. https://newsroom.spotify.com/company-info/
+
+Wlomert, N., Papies, D., & van Heerde, H. J. (2025). Driving Music Demand in the Age of Streaming: Understanding the Heterogeneity in Curated Playlist Effectiveness. Journal of Marketing, 0(0). https://doi.org/10.1177/00222429251395986
