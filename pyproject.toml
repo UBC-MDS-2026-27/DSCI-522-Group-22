@@ -1,0 +1,12 @@
+[project]
+name = "spotify-genre-prediction"
+version = "0.1.0"
+description = "Predicting Spotify song genres from audio features (DSCI 522 Group 22)"
+requires-python = ">=3.13"
+dependencies = [
+    "altair>=6.3.0",
+    "jupyter>=1.1.1",
+    "pandas>=3.1.1",
+    "requests>=2.34.2",
+    "scikit-learn>=1.9.1",
+]
