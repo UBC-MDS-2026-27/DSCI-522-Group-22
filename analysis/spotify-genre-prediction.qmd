@@ -190,7 +190,144 @@ Table 2 summarizes the continuous audio features in the training set. Songs have
 
 
 
-<!-- (#14) Visualization of the training data relevant to the question. -->
+
+
+#### **Visualization of Training Data**
+
+We created two visualizations using only the training data to explore the genre distribution and differences in audio features.
+
+```{python}
+#| label: fig-genre-distribution
+#| fig-cap: "Number of songs in each playlist genre in the training set."
+
+import altair as alt
+
+genre_chart = (
+    alt.Chart(genre_summary)
+    .mark_bar()
+    .encode(
+        x=alt.X("Playlist genre:N", sort="-y", title="Playlist genre"),
+        y=alt.Y("Number of songs:Q", title="Number of songs"),
+        tooltip=["Playlist genre:N", "Number of songs:Q"]
+    )
+    .properties(
+        width=600,
+        height=350,
+        title="Distribution of Playlist Genres"
+    )
+)
+
+display(genre_chart)
+```
+
+@fig-genre-distribution shows the distribution of playlist genres in the training set. Rap has the most songs (4,321), while Latin has the fewest (3,310). Overall, the six genres are relatively balanced, with no single genre dominating the training set.
+
+```{python}
+#| label: fig-energy-by-genre
+#| fig-cap: "Distribution of song energy across playlist genres in the training set."
+
+alt.data_transformers.disable_max_rows()
+
+energy_chart = (
+    alt.Chart(train_df[[TARGET, "energy"]])
+    .mark_boxplot()
+    .encode(
+        x=alt.X(
+            "playlist_genre:N",
+            title="Playlist genre",
+            sort=genre_summary["Playlist genre"].tolist()
+        ),
+        y=alt.Y(
+            "energy:Q",
+            title="Energy (0–1)",
+            scale=alt.Scale(domain=[0, 1])
+        )
+    )
+    .properties(
+        width=600,
+        height=350,
+        title="Energy Distribution by Playlist Genre"
+    )
+)
+
+display(energy_chart)
+```
+
+@fig-energy-by-genre compares the energy distributions across the six playlist genres. EDM has the highest median energy, while R&B has the lowest. However, the distributions overlap across genres, suggesting that energy alone may not be enough to classify songs accurately. Combining multiple audio features may help improve KNN classification.
+
+
+
+```{python}
+#| label: fig-feature-distributions
+#| fig-cap: "Distributions of continuous audio features in the training set."
+
+import numpy as np
+
+# Prepare the continuous audio features
+plot_features = [f for f in FEATURES if f not in ["key", "mode"]]
+
+plot_data = train_df[plot_features].copy()
+plot_data["duration_ms"] = plot_data["duration_ms"] / 1000
+plot_data = plot_data.rename(
+    columns={"duration_ms": "duration (seconds)"}
+)
+
+# Calculate distribution frequencies for each feature
+histogram_rows = []
+
+for feature in plot_data.columns:
+    values = plot_data[feature].dropna()
+    counts, edges = np.histogram(values, bins=25)
+
+    for i in range(len(counts)):
+        histogram_rows.append({
+            "feature": feature,
+            "bin_center": (edges[i] + edges[i + 1]) / 2,
+            "count": counts[i]
+        })
+
+histogram_df = pd.DataFrame(histogram_rows)
+
+# Create individual area plots with independent axes
+charts = []
+
+for feature in plot_data.columns:
+    feature_hist = histogram_df[
+        histogram_df["feature"] == feature
+    ]
+
+    chart = (
+        alt.Chart(feature_hist)
+        .mark_area(opacity=0.7)
+        .encode(
+            x=alt.X("bin_center:Q", title="Feature value"),
+            y=alt.Y("count:Q", title="Number of songs")
+        )
+        .properties(
+            width=250,
+            height=130,
+            title=feature
+        )
+    )
+
+    charts.append(chart)
+
+# Arrange plots in 2 columns
+rows = [
+    alt.hconcat(charts[i], charts[i + 1])
+    for i in range(0, len(charts), 2)
+]
+
+feature_chart = alt.vconcat(*rows)
+
+display(feature_chart)
+```
+
+
+@fig-feature-distributions shows the distributions of the continuous audio features in the training set. Most songs have relatively high danceability and energy, while speechiness, acousticness, and instrumentalness are strongly right-skewed, with many values close to zero. Tempo is mostly concentrated around 100–150 BPM, and song duration is generally around 150–300 seconds. The features also have very different scales, highlighting the importance of feature scaling before KNN classification.
+
+
+
 
 ### Classification analysis
 
