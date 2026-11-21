@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 
 ## Summary
 
-<!-- Quick paragraph about the question being asked and a summary of the result and analysis. Do this at the end (#17) -->
+In this report we ask whether a k-nearest neighbours (k-NN) classification model can use descriptive audio features such as energy, key, mode, and speechiness, amongst others, to accurately predict a genre of the song from one of the following six music genre categories: EDM, latin, pop, R&B, rap and rock. Our tuned k-NN model achieved a test accuracy of 50.56%, indicating that the selected audio features alone are only moderately effective at separating the six genres. Performance was limited by substantial overlap in feature distributions across genres and by the inherently subjective nature of target genre classification labels. Including additional features and testing of alternative models may improve genre prediction.
 
 ## Introduction
 
@@ -626,15 +626,13 @@ The predicted genre distribution differed from the actual distribution in the te
 
 ## Discussion
 
-<!--
-(#17)
-- Summarize what we found and link it back to the question.
-- What the findings mean in the real world.
-- Is this what we expected?
-- Assumptions and limitations.
-- Impact of the findings.
-- Future questions.
--->
+In this analysis, we found that it is difficult to accurately predict music genre from 12 numerical audio features alone. These results suggest that audio features alone are not always sufficient for reliable genre classification, and consideration of other additional information and song metadata may be needed to accurately predict genre classification. However, despite its moderate accuracy score, this k-NN model could still support rough suggestions for similar genres when building playlists or recommending related songs. 
+
+Our final k-NN model achieved a final accuracy score of 50.56% on the test dataset. This score was lower than expected, and the optimum number of neighbours (k=103) was unexpectedly high. In this case, a large k likely reflects heavily overlapping genre classes amongst the examined 8 features, leading to averaging over many neighbours to reduce overfitting to individual nearby songs. However, results show that prediction scores varied across genres, potentially indicating more unique audio feature values for genres such as EDM and rap compared to other genres. To improve on this model, future work could include additional features not included in the current analysis, such as song title or artist, and testing of alternative model approaches such as Support Vector Machines (SVM) which have shown success for music genre classification in the field of music information retrieval (MIR) (Ramirez and Flores, 2020). 
+
+A key assumption of this analysis is that the provided target genres are an accurate representation of the true genre of the songs used in both training and testing. However, this was ultimately influenced by our initial decision to drop duplicate rows that had multiple songs classified to multiple different genres, which itself illustrates the difficulty of defining one specific genre for any given song. Music genres are inherently subjective labels that can be vary across listeners and over time. Because all our data came from a single streaming service (Spotify) and was collected in one specific time range (2020-2021), this model may not generalize well to music genre classification from other time ranges or streaming platforms. 
+
+Overall, music genres can often have intersecting boundaries, and the overlapping audio features revealed in this analysis, makes for a difficult classification task. The findings of this analysis highlight that genre is a dynamic, context-dependent label rather than a fixed characteristic of a given song. Model predicted genres should therefore be treated as suggestions rather than definitive categories, and streaming services should be cautious of relying on models exclusively given how they could affect artist exposure or listener recommendations.
 
 ## References
 
