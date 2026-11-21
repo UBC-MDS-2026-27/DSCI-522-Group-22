@@ -135,28 +135,11 @@ print(f"Test set: {len(test_df):,} songs")
 We defined playlist_genre as our target variable and selected 12 numerical audio features as predictors. These features capture different characteristics of a song, including its rhythmic properties, energy, tonal attributes, and duration. We then separated the predictors and target labels for both the training and test sets, providing the inputs needed for feature selection, model training, and evaluation.
 
 ```{python}
-target = "playlist_genre"
+X_train = train_df[FEATURES]
+y_train = train_df[TARGET]
 
-features = [
-    "danceability",
-    "energy",
-    "key",
-    "loudness",
-    "mode",
-    "speechiness",
-    "acousticness",
-    "instrumentalness",
-    "liveness",
-    "valence",
-    "tempo",
-    "duration_ms"
-]
-
-X_train = train_df[features]
-y_train = train_df[target]
-
-X_test = test_df[features]
-y_test = test_df[target]
+X_test = test_df[FEATURES]
+y_test = test_df[TARGET]
 ```
 
 We then used Mutual Information to rank the 12 audio features based on how informative they were for predicting playlist genre. Continuous features were treated as continuous variables, while key and mode were treated as discrete features since they represent musical categories rather than continuous measurements. This ranking allowed us to identify the most informative audio features and investigate whether using a smaller subset of predictors could improve classification performance.
@@ -179,7 +162,7 @@ mi_scores = mutual_info_classif(
 
 # Rank features
 feature_ranking = pd.DataFrame({
-    "feature": features,
+    "feature": FEATURES,
     "mi_score": mi_scores
 }).sort_values(
     "mi_score", ascending=False
