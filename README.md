@@ -13,7 +13,7 @@ In the current iteration of our analysis, a k-nearest neighbours (k-NN) model co
 
 ## Report
 
-The rendered report is available here: <https://ubc-mds-2026-27.github.io/DSCI-522-Group-22/analysis/spotify-genre-prediction.html>
+The rendered report is available here: <https://ubc-mds-2026-27.github.io/DSCI-522-Group-22-Spotify-Prediction/analysis/spotify-genre-prediction.html>
 
 The source for the report is [`analysis/spotify-genre-prediction.qmd`](analysis/spotify-genre-prediction.qmd).
 
@@ -33,8 +33,8 @@ Make sure the following dependencies are installed on your machine:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/UBC-MDS-2026-27/DSCI-522-Group-22.git
-   cd DSCI-522-Group-22
+   git clone https://github.com/UBC-MDS-2026-27/DSCI-522-Group-22-Spotify-Prediction.git
+   cd DSCI-522-Group-22-Spotify-Prediction
    ```
 
 2. Setup Python environment:
