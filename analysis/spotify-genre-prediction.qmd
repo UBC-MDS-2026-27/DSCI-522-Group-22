@@ -50,11 +50,9 @@ The target we aim to predict is a candidate playlist genre for the song, one of 
 
 ## Methods
 
-<!--
-(#12) In written English, walk the reader through what we did and why.
-- Name the model and explain why it fits the question.
-- Name the evaluation metric and explain why we chose it.
--->
+We used a K-Nearest Neighbors (KNN) classifier to predict a song's playlist genre based on its audio features. KNN works by identifying songs with similar feature values and using their genres to make a prediction, making it a suitable approach for exploring whether songs with similar audio characteristics tend to belong to the same genre. Rather than learning a fixed relationship between each feature and genre, the model relies on similarities between songs, which aligns with our question of whether audio features can help distinguish musical genres.
+
+We evaluated the model using accuracy, which represents the proportion of songs correctly classified out of all predictions. We chose accuracy because it provides an intuitive measure of the model's overall performance across the genre categories. To determine the best-performing configuration, we used cross-validation on the training data to compare different feature subsets and values of k, then selected the combination with the highest mean cross-validation accuracy. Finally, we evaluated the selected model on the held-out test set to assess how well it generalized to unseen songs.
 
 ### Data download and cleaning
 
