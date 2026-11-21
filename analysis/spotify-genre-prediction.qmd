@@ -18,7 +18,16 @@ from pathlib import Path
 
 import pandas as pd
 import requests
+
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.feature_selection import mutual_info_classif
+from sklearn.pipeline import make_pipeline
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+from sklearn.metrics import accuracy_score
+
+import matplotlib.pyplot as plt
 ```
 
 ## Summary
@@ -341,7 +350,240 @@ display(feature_chart)
 
 ### Classification analysis
 
-<!-- (#15) Fit and evaluate the model. -->
+We defined playlist_genre as our target variable and selected 12 numerical audio features as predictors. These features capture different characteristics of a song, including its rhythmic properties, energy, tonal attributes, and duration. We then separated the predictors and target labels for both the training and test sets, providing the inputs needed for feature selection, model training, and evaluation.
+
+```{python}
+target = "playlist_genre"
+
+features = [
+    "danceability",
+    "energy",
+    "key",
+    "loudness",
+    "mode",
+    "speechiness",
+    "acousticness",
+    "instrumentalness",
+    "liveness",
+    "valence",
+    "tempo",
+    "duration_ms"
+]
+
+X_train = train_df[features]
+y_train = train_df[target]
+
+X_test = test_df[features]
+y_test = test_df[target]
+```
+
+We then used Mutual Information to rank the 12 audio features based on how informative they were for predicting playlist genre. Continuous features were treated as continuous variables, while key and mode were treated as discrete features since they represent musical categories rather than continuous measurements. This ranking allowed us to identify the most informative audio features and investigate whether using a smaller subset of predictors could improve classification performance.
+
+```{python}
+# Standardize training features for feature ranking
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+
+# Mutual Information scores
+mi_scores = mutual_info_classif(
+    X_train_scaled,
+    y_train,
+    discrete_features=[
+        False, False, True, False, True, False,
+        False, False, False, False, False, False
+    ],
+    random_state=42
+)
+
+# Rank features
+feature_ranking = pd.DataFrame({
+    "feature": features,
+    "mi_score": mi_scores
+}).sort_values(
+    "mi_score", ascending=False
+).reset_index(drop=True)
+
+feature_ranking
+```
+
+After ranking the features, we grouped them into subsets of the top 3, 5, and 8 features, along with the full set of 12 features. This allowed us to compare whether using fewer, more informative features could improve classification accuracy, or whether including additional audio characteristics would provide more useful information to the model.
+
+```{python}
+ranked_features = feature_ranking["feature"].tolist()
+
+feature_subsets = {
+    "Top 3": ranked_features[:3],
+    "Top 5": ranked_features[:5],
+    "Top 8": ranked_features[:8],
+    "All 12": ranked_features
+}
+```
+
+We then used stratified 5-fold cross-validation to compare KNN models across the four feature subsets and different values of *k*, ranging from 3 to 200. Since KNN relies on distances between observations, we included StandardScaler in each model pipeline to standardize the features, preventing variables with larger numerical scales, such as duration and tempo, from dominating the distance calculations. Stratification maintained the genre proportions across folds, while shuffling and a fixed random seed (522) ensured reproducibility. For each combination of feature subset and *k*, we recorded the mean and standard deviation of accuracy across the five folds to compare model performance and identify the most promising configuration.
+
+```{python}
+# 5-fold cross-validation
+cv = StratifiedKFold(
+    n_splits=5,
+    shuffle=True,
+    random_state=522
+)
+
+# Candidate values for k
+k_values = range(3, 201, 5)
+
+cv_results = []
+
+for subset_name, subset_features in feature_subsets.items():
+
+    for k in k_values:
+
+        model = make_pipeline(
+            StandardScaler(),
+            KNeighborsClassifier(n_neighbors=k)
+        )
+
+        scores = cross_val_score(
+            model,
+            X_train[subset_features],
+            y_train,
+            cv=cv,
+            scoring="accuracy",
+            n_jobs=-1
+        )
+
+        cv_results.append({
+            "feature_subset": subset_name,
+            "n_features": len(subset_features),
+            "k": k,
+            "mean_cv_accuracy": scores.mean(),
+            "std_cv_accuracy": scores.std()
+        })
+
+cv_results_df = pd.DataFrame(cv_results)
+
+# Sort by mean CV accuracy
+cv_results_df = cv_results_df.sort_values(
+    "mean_cv_accuracy",
+    ascending=False
+).reset_index(drop=True)
+
+# Best configuration
+cv_results_df.head(1)
+```
+
+We compared the mean cross-validation accuracy across the four feature subsets and different values of *k* using a heatmap. This visualization allows us to examine how the number of features and neighbors affect model performance and identify the configurations that achieve the highest accuracy, which can guide further tuning.
+
+```{python}
+heatmap_data = cv_results_df.pivot(
+    index="feature_subset",
+    columns="k",
+    values="mean_cv_accuracy"
+)
+
+heatmap_data = heatmap_data.reindex(
+    ["Top 3", "Top 5", "Top 8", "All 12"]
+)
+
+plt.figure(figsize=(30, 3))
+
+plt.imshow(heatmap_data, aspect="auto")
+
+plt.xticks(range(len(heatmap_data.columns)), heatmap_data.columns)
+plt.yticks(range(len(heatmap_data.index)), heatmap_data.index)
+
+plt.xlabel("Number of Neighbors (k)")
+plt.ylabel("Feature Subset")
+plt.title("KNN Cross-Validation Accuracy")
+
+for i in range(len(heatmap_data.index)):
+    for j in range(len(heatmap_data.columns)):
+        plt.text(
+            j, i,
+            f"{heatmap_data.iloc[i, j]:.3f}",
+            ha="center",
+            va="center"
+        )
+
+plt.colorbar(label="Mean CV Accuracy")
+plt.tight_layout()
+plt.show()
+```
+
+The Top 8 feature subset generally achieved the highest cross-validation accuracy, outperforming the Top 3 and Top 5 subsets across most values of *k*. Its accuracy increased as the number of neighbors grew before plateauing at approximately 50.1%–50.4%. Although the All 12 feature subset also performed competitively, it did not consistently outperform Top 8, suggesting that additional features did not improve classification performance. We therefore focused on the Top 8 subset and the larger values of *k*, conducting a finer search between 98 and 107 across all feature subsets to compare neighboring configurations and identify the best-performing model.
+
+```{python}
+# 5-fold cross-validation
+cv = StratifiedKFold(
+    n_splits=5,
+    shuffle=True,
+    random_state=522
+)
+
+# Fine search for k
+k_values = range(98, 108, 1)
+
+fine_cv_results = []
+
+for subset_name, subset_features in feature_subsets.items():
+
+    for k in k_values:
+
+        model = make_pipeline(
+            StandardScaler(),
+            KNeighborsClassifier(n_neighbors=k)
+        )
+
+        scores = cross_val_score(
+            model,
+            X_train[subset_features],
+            y_train,
+            cv=cv,
+            scoring="accuracy",
+            n_jobs=-1
+        )
+
+        fine_cv_results.append({
+            "feature_subset": subset_name,
+            "n_features": len(subset_features),
+            "k": k,
+            "mean_cv_accuracy": scores.mean(),
+            "std_cv_accuracy": scores.std()
+        })
+
+fine_cv_results_df = pd.DataFrame(fine_cv_results)
+
+# Sort by mean CV accuracy
+fine_cv_results_df = fine_cv_results_df.sort_values(
+    "mean_cv_accuracy",
+    ascending=False
+).reset_index(drop=True)
+
+# Best configuration
+fine_cv_results_df.head(1)
+```
+
+The fine-tuning results identified the Top 8 feature subset with *k* = 103 as the best configuration, achieving a mean 5-fold cross-validation accuracy of 50.36% and a standard deviation of 1.12%. The performance differences across neighboring values of *k* were relatively small, indicating that accuracy remained stable within this range. We therefore selected this configuration for the final model evaluation on the held-out test set.
+
+```{python}
+final_features = feature_subsets["Top 8"]
+final_k = 103
+
+final_knn = make_pipeline(
+    StandardScaler(),
+    KNeighborsClassifier(n_neighbors=final_k)
+)
+
+final_knn.fit(X_train[final_features], y_train)
+
+y_pred = final_knn.predict(X_test[final_features])
+
+test_accuracy = accuracy_score(y_test, y_pred)
+
+print(f"Test Accuracy: {test_accuracy:.4f}")
+```
+
+Using the selected Top 8 feature subset and (*k* = 103), we fitted the final KNN model on the full training set and evaluated it on the held-out test set. The model achieved a test accuracy of **50.56%**, correctly classifying approximately half of the songs. This indicates that the selected audio features provide some predictive information about playlist genre, but are not sufficient to reliably distinguish between all genres.
 
 ## Results
 
