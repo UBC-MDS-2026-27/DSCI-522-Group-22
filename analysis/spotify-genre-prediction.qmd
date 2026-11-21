@@ -256,6 +256,67 @@ display(energy_chart)
 @fig-energy-by-genre compares the energy distributions across the six playlist genres. EDM has the highest median energy, while R&B has the lowest. However, the distributions overlap across genres, suggesting that energy alone may not be enough to classify songs accurately. Combining multiple audio features may help improve KNN classification.
 
 
+```{python}
+#| label: fig-feature-distributions
+#| fig-cap: "Distributions of continuous audio features in the training set."
+
+import numpy as np
+
+# Prepare the continuous audio features
+plot_features = [f for f in FEATURES if f not in ["key", "mode"]]
+
+plot_data = train_df[plot_features].copy()
+plot_data["duration_ms"] = plot_data["duration_ms"] / 1000
+plot_data = plot_data.rename(
+    columns={"duration_ms": "duration (seconds)"}
+)
+
+# Calculate histogram frequencies for each feature
+histogram_rows = []
+
+for feature in plot_data.columns:
+    values = plot_data[feature].dropna()
+    counts, edges = np.histogram(values, bins=25)
+
+    for i in range(len(counts)):
+        histogram_rows.append({
+            "feature": feature,
+            "bin_start": edges[i],
+            "bin_end": edges[i + 1],
+            "count": counts[i]
+        })
+
+histogram_df = pd.DataFrame(histogram_rows)
+
+# Create faceted histograms
+feature_chart = (
+    alt.Chart(histogram_df)
+    .mark_bar()
+    .encode(
+        x=alt.X("bin_start:Q", title="Feature value"),
+        x2="bin_end:Q",
+        y=alt.Y("count:Q", title="Number of songs"),
+        tooltip=["feature:N", "count:Q"]
+    )
+    .properties(width=260, height=130)
+    .facet(
+        facet=alt.Facet(
+            "feature:N",
+            sort=plot_data.columns.tolist(),
+            title=None
+        ),
+        columns=2
+    )
+    .resolve_scale(x="independent", y="independent")
+)
+
+display(feature_chart)
+```
+
+@fig-feature-distributions shows the distributions of the continuous audio features in the training set. Most songs have relatively high danceability and energy, while speechiness, acousticness, and instrumentalness are strongly right-skewed, with many values close to zero. Tempo is mostly concentrated around 100–150 BPM, and song duration is generally around 150–300 seconds. The features also have very different scales, highlighting the importance of feature scaling before KNN classification.
+
+
+
 
 ### Classification analysis
 
