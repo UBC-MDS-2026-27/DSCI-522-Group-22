@@ -570,11 +570,59 @@ Using the selected Top 8 feature subset and (*k* = 103), we fitted the final KNN
 
 ## Results
 
-<!--
-(#16) Key results that answer the question, using figures and tables.
-- Number and caption every figure and table, and refer to them in the text.
-- Label axes in plain English with units; include legends.
--->
+To further examine model performance, we evaluated its predictions across individual genres using precision, recall, and F1-score. This allows us to identify which genres were more accurately classified and which were more challenging for the model to distinguish.
+
+```{python}
+from sklearn.metrics import classification_report
+import pandas as pd
+
+report = classification_report(
+    y_test,
+    y_pred,
+    output_dict=True
+)
+
+report_df = pd.DataFrame(report).transpose()
+
+genre_metrics = report_df.loc[
+    sorted(y_test.unique()),
+    ["precision", "recall", "f1-score"]
+]
+
+genre_metrics
+```
+
+The model's performance varied considerably across genres. EDM achieved the highest recall (67.11%) and F1-score (60.45%), followed by rap, indicating that these genres were relatively easier for the model to identify. Rock had the highest precision (59.85%), suggesting that its predictions were comparatively reliable. In contrast, pop had the lowest F1-score (36.97%), while Latin also showed relatively low recall (37.48%). These differences suggest that the selected audio features may capture characteristics of certain genres more effectively than others.
+
+We also compared the actual genre distribution in the test set with the distribution of genres predicted by the model. This comparison helps identify whether the model tends to favor certain genres or systematically underpredicts others.
+
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+
+actual_counts = y_test.value_counts().sort_index()
+predicted_counts = pd.Series(y_pred).value_counts().sort_index()
+
+distribution_df = pd.DataFrame({
+    "Actual": actual_counts,
+    "Predicted": predicted_counts
+}).fillna(0)
+
+distribution_df.plot(
+    kind="bar",
+    figsize=(8, 4)
+)
+
+plt.xlabel("Playlist Genre")
+plt.ylabel("Number of Songs")
+plt.title("Actual vs. Predicted Genre Distribution")
+plt.xticks(rotation=45)
+plt.legend(title="Distribution")
+plt.tight_layout()
+plt.show()
+```
+
+The predicted genre distribution differed from the actual distribution in the test set. EDM and rap were overpredicted, while Latin was notably underpredicted. The model predicted approximately 1,190 EDM songs compared with fewer than 1,000 actual songs, while the number of predicted Latin songs was substantially lower than the actual count. Although the predicted counts for pop, R&B, and rock were relatively close to their actual distributions, this does not necessarily indicate accurate classification at the individual-song level. These discrepancies highlight differences in prediction behavior across genres and may help explain the uneven classification performance observed.
 
 ## Discussion
 
